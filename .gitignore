@@ -1,2 +1,3 @@
 *.synctex.gz
 *.aux
+__pycache__/
