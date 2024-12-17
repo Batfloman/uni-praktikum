@@ -1,0 +1,3 @@
+In diesem Versuch wird das Hystereseverhalten der Magnetisierung eines ferromagnetischen Materials, speziell Eisen, untersucht. Die Magnetisierung entsteht durch die mikroskopische Ausrichtung der magnetischen Momente im Material durch ein externes Magnetfeld. Diese Ausrichtung bleibt (größtenteils) erhalten auch wenn das externe Feld wieder abgeschaltet wird.
+
+Wenn man das Eisen also zyklisch Magnetisiert entsteht eine Kurve, die Hysteresekurve aus der man Materialeigenschaften lesen kann, wie die Remanenz (verbleibende Magnetisierung bei ausgeschaltetem externen Feld), die Koerzitivfeldstärke (nötige Feldstärke um die Magnetisierung wieder auf 0 zu bringen), und die Anfang- und maximal Permeabilität (magnetische Leitfähigkeit).

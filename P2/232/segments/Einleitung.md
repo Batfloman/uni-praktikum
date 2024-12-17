@@ -1,0 +1,3 @@
+Dieser Versuch befasst sich mit den grundlegenden Eigenschaften von Spannungsquellen und Widerständen sowie mit ihrer Analyse durch verschiedene Schaltungen. Ziel ist es, Konzepte wie Leerlaufspannung, Innenwiderstand und Klemmenspannung praktisch zu untersuchen.
+
+Zudem wird die Funktionsweise von Spannungsteilern und die Messung von Widerständen mithilfe von Strom- und Spannungsmessgeräten sowie der Wheatstoneschen Brückenschaltung behandelt. Ein weiterer Fokus liegt auf der Untersuchung der Temperaturabhängigkeit des elektrischen Widerstands verschiedener Materialien.

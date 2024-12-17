@@ -1,0 +1,25 @@
+\begin{circuitikz}[european]
+    % path 1 
+    \draw[dashed] (4,0) -- (3,0);
+    \draw (3,0) -- (0,0);
+    \draw (0,0) to[V, l=$U_0$] (0,2.5);
+    \draw (0,2.5) -- (3,2.5);
+    \draw[dashed] (3,2.5) -- (4,2.5);
+    % Resistor
+    \node[fill=black,circle,inner sep=1pt] at (1.25,2.5) {};
+    \draw (1.25,2.5) to[R, l=$R_i$] (1.25,0);
+    \node[fill=black,circle,inner sep=1pt] at (1.25,0) {};
+    % Box
+    \draw[dashed] (-1.25, -.5) rectangle (2.25,3.5);
+
+    % I_0
+    \draw[->, thick] (0.25,2.75) -- (1,2.75) node[midway, above]{$I_0$};
+    % I_i
+    \draw[->, thick] (1.5,2.35) -- (1.5,1.9) node[midway, right]{$I_i$};
+    % I_a
+    \draw[->, thick] (2.5,2.75) -- (3.25,2.75) node[midway, above]{$I_a$};
+    
+    % poles
+    \node[anchor=north] at (4,0) {$+$};
+    \node[anchor=south] at (4,2.5) {$-$};
+\end{circuitikz}

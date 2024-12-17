@@ -1,0 +1,37 @@
+\documentclass[a4paper,12pt]{article}
+
+% Pakete
+\usepackage[ngerman]{babel} % Deutsche Spracheinstellungen
+\usepackage[utf8]{inputenc} % UTF-8 Zeichenkodierung
+\usepackage{amsmath, amssymb} % Mathematik-Pakete
+\usepackage{graphicx} % Bilder einfügen
+\usepackage{hyperref} % Hyperlinks
+\usepackage{geometry} % Seitenränder
+\geometry{a4paper, margin=2.5cm}
+
+\newcounter{module}
+\setcounter{module}{300}
+
+% Titelinformationen
+\title{Versuchsprotokoll \themodule}
+\author{Florian Hirche}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% Einbinden der Segmente
+\input{segments/einleitung.tex}
+\input{segments/theorie.tex}
+\renewcommand{\thesubsection}{\themodule.\Alph{subsection}}
+\input{segments/voraufgaben.tex}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\input{segments/durchfuehrung.tex}
+\input{segments/messungen.tex}
+\input{segments/auswertung.tex}
+\input{segments/fazit.tex}
+
+\end{document}

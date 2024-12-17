@@ -1,0 +1,18 @@
+\begin{circuitikz}[european]
+    % components 
+    \draw[dashed] (4,0) -- (3,0);
+    \draw (3,0) -- (0,0);
+    \draw (0,0) to[V, l=$U_0$] (0,2.5);
+    \draw (0,2.5) to[R, l=$R_i$] (2,2.5);
+    \draw (2,2.5) -- (3,2.5);
+    \draw[dashed] (3,2.5) -- (4,2.5);
+    % Box
+    \draw[dashed] (-1.25,-.5) rectangle (2.25,3.5);
+
+    % voltage
+    \draw[->, thick] (0.5,2.1) to[bend right] node[midway, below] {$U_i$} (1.5,2.1);
+    
+    % poles
+    \node[anchor=north] at (4,0) {$+$};
+    \node[anchor=south] at (4,2.5) {$-$};
+\end{circuitikz}

@@ -1,0 +1,5 @@
+In diesem Versuch wird die Wirkung elektrischer und magnetischer Felder auf geladene Teilchen untersucht. Ziel ist es, fundamentale physikalische Größen wie die spezifische Ladung $e/m$ des Elektrons und die Elementarladung $e$ experimentell zu bestimmen.  
+
+Im ersten Versuchsteil wird das Verhältnis $e/m$ mithilfe eines Fadenstrahlrohrs ermittelt. Ein Elektronenstrahl wird durch ein homogenes Magnetfeld geleitet, wodurch er aufgrund der Lorentzkraft auf eine Kreisbahn abgelenkt wird. Durch Messungen der Beschleunigungsspannung, des Kreisdurchmessers und des Magnetfelds (erzeugt durch den Strom in den Helmholtz-Spulen) kann das Verhältnis über die Gleichgewichtsbedingung der Lorentzkraft und Zentripetalkraft berechnet werden.
+
+Im zweiten Versuchsteil wird die Elementarladung $e$ mit dem Millikan-Versuch bestimmt. Hierbei werden elektrisch geladene Öltröpfchen in das elektrische Feld eines Kondensators beobachtet. Durch Analyse der wirkenden Kräfte – Gravitation, Auftrieb, Stokessche Reibung und die elektrische Kraft – sowie der Geschwindigkeiten der Tröpfchen lässt sich die Quantisierung der Ladung bestimmen.
