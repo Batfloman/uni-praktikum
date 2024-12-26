@@ -1,0 +1,22 @@
+% Pakete
+\usepackage[ngerman]{babel} % Deutsche Spracheinstellungen
+\usepackage[utf8]{inputenc} % UTF-8 Zeichenkodierung
+\usepackage{amsmath, amssymb} % Mathematik-Pakete
+\usepackage{graphicx} % Bilder einfügen
+\usepackage{hyperref} % Hyperlinks
+\usepackage{geometry} % Seitenränder
+\usepackage{tcolorbox} % Colorbox
+\geometry{a4paper, margin=2.5cm}
+
+% used for relative imports from this file, so that the preamble can be used from anywhere
+\usepackage{import}
+% fancy color boxes
+\subimport{./preamble/}{tcolorbox.tex}
+
+\newcounter{module}
+\setcounter{module}{0}
+
+% Titelinformationen
+\title{Versuchsprotokoll \themodule}
+\author{Florian Hirche}
+\date{\today}
