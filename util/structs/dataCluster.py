@@ -1,14 +1,12 @@
 import numpy as np
 import copy
 import pandas as pd
-import matplotlib.pyplot as plt;
 from typing import List, Optional, Tuple, Union
-from decimal import Decimal
 import re
 
-from util.structs import Dataset, Measurement
-from util import csv_table;
+from util.structs import Dataset, Measurement, CopyManager
 from util import excel_table;
+from util import latex;
 
 def _column_has_measurement(array):
     return any(isinstance(obj, Measurement) for obj in array);
@@ -34,6 +32,7 @@ class DataCluster:
     def __init__(self, data: List[Dataset] = np.array([])):
         self.data = data
         self.save = _Save_Manager(self);
+        self.copy = CopyManager(self);
     
     def to_np_array(self, with_header = True):
         indicies = self.get_indicies();
@@ -326,20 +325,29 @@ class _Save_Manager:
     def __init__(self, super: DataCluster):
         self._super = super;
     
-    def to_excel(self, filename):
-        table = self._super.to_np_array();
-        header = table[0];
+    def _create_dataframe(self):
+        """Create a DataFrame from the object's table."""
+        table = self._super.to_np_array(with_header=True);
+        header = table[0]
         table_data = table[1:]
 
-        data = {};
-        for i, index in enumerate(header):
-            data[index] = table_data[:, i]
-        df = pd.DataFrame(data);
+        data = {index: table_data[:, i] for i, index in enumerate(header)}
+        df = pd.DataFrame(data)
 
+        # Replace LaTeX in headers with Unicode equivalents
         processed_header = [_latex_to_unicode_converter(col) for col in header]
-        df.columns = processed_header  # Replace column names with processed LaTeX
-        
-        excel_table.save(df, filename)
+        df.columns = processed_header
+
+        return df
+    
+    def as_excel(self, filename):
+        """Save the DataFrame to an Excel file."""
+        df = self._create_dataframe()
+        excel_table.save(df, filename);
+    
+    def as_latex(self, filename):
+        data = self._super.to_np_array_measurements();
+        latex.save_table(data, filename)
 
 def create_table(columns, data):
     """

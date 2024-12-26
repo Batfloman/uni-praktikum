@@ -1,15 +1,16 @@
 import numpy as np;
-import math;
-from uncertainties import ufloat;
+from uncertainties import ufloat
 
+from util.structs import CopyManager
 from util import mymath;
 from .unit import Unit;
 
+# I would have *loved* to just go Measurement(ufloat) to extend the ufloat from the uncertainties package
+# however the ufloat seems to return a function instead of a py-class, which means extending is not possible
+# this is why to add just a bit of custom functions we need to define all operations (__add__, ...) again :(
 class Measurement:
     def __init__(self, value, uncertainty, unit=Unit(), min_error=None):
          # Überprüfung der Eingaben
-        # if not isinstance(value, str) and value is "inf":
-        #     value = np.inf
         if not isinstance(value, (float, int)):
             value = np.nan
 
@@ -18,17 +19,18 @@ class Measurement:
                 percentage = float(uncertainty[:-1])  # Entfernt "%" und wandelt in float um
                 uncertainty = abs(value) * percentage / 100
             except ValueError:
-                uncertainty = np.nan  # Fallback, falls der String nicht korrekt ist
+                uncertainty = np.nan  # Fallback, falls der Input nicht korrekt ist
         elif not isinstance(uncertainty, (float, int)):
             uncertainty = np.nan
 
+        # %-Errors could result in 0 values for uncertainties, we can bypass this with a min_error
         if uncertainty is not np.nan and min_error is not None and uncertainty < min_error:
             uncertainty = min_error
 
         self.ufloat = ufloat(value, uncertainty);
         self.unit = unit;
-        self.significant_digit = 1;
-        self.copy = Measurement._Copy(self)
+        self.additional_digits = 0;
+        self.copy = CopyManager(self)
 
     @property
     def value(self):
@@ -51,26 +53,12 @@ class Measurement:
         self.ufloat = ufloat(value, error);
         return self;
 
-    class _Copy:
-        def __call__(self):
-            return Measurement(self.super.value, self.super.error, self.super.unit);
+    # ==================================================
+    #    math operations
+    # ==================================================
 
-        def __init__(self, super):
-            self.super = super;
-        
-        def round_digit(self, digits = 0):
-            value = mymath.round(self.value, digits)
-            error = mymath.ceil(self.error, digits)
-            return Measurement(value, error, self.unit);
-        
-        def round(self, additional_digits = 0):
-            exponent = mymath.get_exponent_significant(self.error);
-            value = mymath.round(self.value, -exponent + additional_digits)
-            error = mymath.ceil(self.error, -exponent + additional_digits)
-            return Measurement(value, error);
-   
     def __add__(self, other):
-        if isinstance(other, Measurement):
+        if isinstance(other, Measurement):        
             unit = self.unit if self.unit == other.unit else Unit()
             if not unit: 
                 print(f"Warning! Addition of different units: {self.unit} and {other.unit}")
@@ -79,8 +67,7 @@ class Measurement:
         elif isinstance(other, (int, float)):
             result = self.ufloat + other
             return Measurement(result.nominal_value, result.std_dev, self.unit)
-        else:
-            raise NotImplementedError(f"Unsupported type for operator +: {type(other)}")
+        raise NotImplementedError(f"Unsupported type for operator +: {type(other)}")
         
     def __radd__(self, other):
         return self.__add__(other);
@@ -150,9 +137,6 @@ class Measurement:
     def __abs__(self):
         return Measurement(abs(self.value), self.error, self.unit)
 
-    def __repr__(self):
-        return f"Measurement(value={self.value}, error={self.error})"
-
     def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
         """
         Handle NumPy universal functions.
@@ -194,29 +178,82 @@ class Measurement:
                 return values[0] / values[1]
             case _:
                 raise NotImplementedError(f"not handled function: {ufunc}")
+        return;
+
+    # ==================================================
+    #     Comparison operations
+    # ==================================================
 
     def __lt__(self, other):
-        if isinstance(other, Measurement):
+        if isinstance(other, (int, float, Measurement)):
+            return self.value < other;
+        elif isinstance(other, Measurement):
             return self.value < other.value
-        else:
-            raise NotImplementedError(f"Unsupported type for operator <: {type(other)}")
+        return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, (int, float, Measurement)):
+            return self.value <= other;
+        elif isinstance(other, Measurement):
+            return self.value <= other.value
+        return NotImplemented
+
+    def __eq__(self, other):
+        if isinstance(other, (int, float, Measurement)):
+            return self.value == other;
+        elif isinstance(other, Measurement):
+            return self.value == other.value
+        return NotImplemented
+
+    def __ge__(self, other):
+        if isinstance(other, (int, float, Measurement)):
+            return self.value >= other;
+        elif isinstance(other, Measurement):
+            return self.value >= other.value
+        return NotImplemented
+
+    def __gt__(self, other):
+        if isinstance(other, (int, float, Measurement)):
+            return self.value > other;
+        elif isinstance(other, Measurement):
+            return self.value > other.value
+        return NotImplemented
     
+    # ==================================================
+    #    string operations
+    # ==================================================
+
     def __str__(self):
-        exponent = mymath.get_exponent_significant(self.error);
+        # Determine exponents
+        exponent_error = mymath.get_exponent_significant(self.error) - self.additional_digits
+        exponent_value = mymath.get_exponent_significant(self.value)
+        offset = exponent_value - exponent_error
+
+        # Scientific notation
+        adjusted_value = self.value / (10 ** exponent_value)
+        value_text = f"{adjusted_value:.{offset}f}"
+        adjusted_error = self.error / (10 ** exponent_error)
+        error_text = f"{int(mymath.ceil(adjusted_error))}"
+        exponent_text = f"e{exponent_value:+d}" if exponent_value != 0 else ""
+        return f"{value_text}({error_text}){exponent_text}"
+
         # exponent = mymath.get_exponent_closest_3n(self.error);
-        symbol = "+" if exponent > 0 else "-"; # just to get the "+" explicitly
-        exponent_text = f"e{symbol}{abs(exponent)}" if exponent != 0 else "";
+        # symbol = "+" if exponent > 0 else "-"; # just to get the "+" explicitly
+        # exponent_text = f"e{symbol}{abs(exponent)}" if exponent != 0 else "";
 
-        # unit_text = "[\u00B7]" if (not self.unit or self.unit == "") else f" [{self.unit}]"
-        unit_text = "";
+        # # unit_text = "[\u00B7]" if (not self.unit or self.unit == "") else f" [{self.unit}]"
+        # unit_text = "";
 
-        # Adjust value and error accordingly
-        adjusted_value = self.value / (10 ** exponent)
-        adjusted_error = self.error / (10 ** exponent)
+        # # Adjust value and error accordingly
+        # adjusted_value = self.value / (10 ** exponent)
+        # adjusted_error = self.error / (10 ** exponent)
 
-        value_text = f"{adjusted_value:>{4 + self.significant_digit}.{self.significant_digit}f}"
-        error_text = f"{adjusted_error:>{2 + self.significant_digit}.{self.significant_digit}f}"
-        return f"({value_text} ± {error_text}){exponent_text}{unit_text}"
+        # value_text = f"{adjusted_value:>{4 + self.additional_digit}.{self.additional_digit}f}"
+        # error_text = f"{adjusted_error:>{2 + self.additional_digit}.{self.additional_digit}f}"
+        # return f"({value_text} ± {error_text}){exponent_text}{unit_text}"
+
+    def __repr__(self):
+        return f"Measurement(value={self.value}, error={self.error})"
     
     def __format__(self, format_spec):
-        return format(self.__str__(), format_spec)
+        return format(self.__str__(), format_spec);
