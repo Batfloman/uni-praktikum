@@ -59,9 +59,6 @@ def read(file_path, remove_header=False):
         print(f"Error occurred: {e}")
         return None
 
-import pandas as pd
-import numpy as np
-
 def save(data, filename='output.xlsx'):
     """
     Save the provided data (DataFrame, NumPy array, or dictionary) to an Excel file.
