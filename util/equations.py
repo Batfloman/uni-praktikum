@@ -1,10 +1,11 @@
-import sympy as sp;
+import os
+import sympy as sp
 from inspect import signature
 import re
-from IPython.display import Markdown, display
+from IPython.display import Markdown, display as _ipython_display
 from typing import Callable, Union
 
-def display_equation(input_data: Union[str, Callable, sp.Basic]):
+def display(input_data: Union[str, Callable, sp.Basic]):
     """
     Processes the input and displays a LaTeX-rendered equation in a Jupyter Notebook.
     
@@ -22,7 +23,7 @@ def display_equation(input_data: Union[str, Callable, sp.Basic]):
             
             # Validate and clean LaTeX content
             cleaned_content = re.sub(r"\\label\{[^}]*\}", "", latex_content)
-            display(Markdown(f"$$ {cleaned_content} $$"))
+            _ipython_display(Markdown(f"$$ {cleaned_content} $$"))
         except FileNotFoundError:
             raise ValueError(f"The file at path '{input_data}' was not found.")
         except Exception as e:
@@ -33,14 +34,14 @@ def display_equation(input_data: Union[str, Callable, sp.Basic]):
         try:
             sympy_expr = to_sympy(input_data)
             latex_expr = sp.latex(sympy_expr)
-            display(Markdown(f"$$ {latex_expr} $$"))
+            _ipython_display(Markdown(f"$$ {latex_expr} $$"))
         except Exception as e:
             raise ValueError(f"Error converting function to sympy expression: {e}")
     
     elif isinstance(input_data, sp.Basic):
         # Handle sympy expression
         latex_expr = sp.latex(input_data)
-        display(Markdown(f"$$ {latex_expr} $$"))
+        _ipython_display(Markdown(f"$$ {latex_expr} $$"))
     
     else:
         raise TypeError("Input must be a file path (str), a callable function, or a sympy expression.")
@@ -68,13 +69,16 @@ def export_as_latex(func, filename: str, **symbol_overrides):
     if not filename.endswith(".tex"):
         filename += ".tex"
 
+    absolute_path = os.path.abspath(filename)
+    file_name = os.path.basename(absolute_path)
+
     # Write the LaTeX string to a file
     try:
         with open(filename, 'w') as f:
             f.write(sp.latex(func))
-        print(f"LaTeX exported successfully to {filename}")
+        print(f"Exported equation to {file_name} at {absolute_path}")
     except IOError as e:
-        raise IOError(f"Failed to write LaTeX to file: {filename}") from e
+        raise IOError(f"Failed to write LaTeX to file: {absolute_path}") from e
 
 def to_sympy(func, **symbol_overrides):
     """
