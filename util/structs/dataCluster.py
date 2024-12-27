@@ -95,7 +95,10 @@ class DataCluster:
             for dataset in to_remove:
                 self.remove(dataset)
         elif isinstance(to_remove, Dataset):
-            self.data = np.delete(self.data, np.where(self.data == to_remove))
+            if to_remove not in self.data:
+                print(f"tried removing not exsisting {to_remove}");
+                return;
+            self.data.remove(to_remove)
         else:
             raise ValueError(f"Unsupported type for removal: {type(to_remove)}")
 
