@@ -1,5 +1,6 @@
 import numpy as np;
 import re;
+import os;
 
 latex_patterns = {
     r'([A-Za-z])_(\d+)': r'$\1_{\2}$',  # Replace I_1 with $I_1$
@@ -49,3 +50,5 @@ def save_table(arr, filename: str):
         
         f.write("\\hline\n")
         f.write("\\end{tabular}\n")
+    
+    print(f"Successfully exported table {os.path.basename(filename)} to {os.path.abspath(filename)}")
