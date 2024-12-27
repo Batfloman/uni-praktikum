@@ -1,15 +1,18 @@
 import numpy as np;
 from uncertainties import ufloat
+import pint
+import math
 
 from util.structs import CopyManager
 from util import mymath;
-from .unit import Unit;
+
+ureg = pint.UnitRegistry();
 
 # I would have *loved* to just go Measurement(ufloat) to extend the ufloat from the uncertainties package
 # however the ufloat seems to return a function instead of a py-class, which means extending is not possible
 # this is why to add just a bit of custom functions we need to define all operations (__add__, ...) again :(
 class Measurement:
-    def __init__(self, value, uncertainty, unit=Unit(), min_error=None):
+    def __init__(self, value, uncertainty, unit=ureg.Unit(""), min_error=None):
          # Überprüfung der Eingaben
         if not isinstance(value, (float, int)):
             value = np.nan
@@ -28,9 +31,12 @@ class Measurement:
             uncertainty = min_error
 
         self.ufloat = ufloat(value, uncertainty);
-        self.unit = unit;
-        self.additional_digits = 0;
+        self.unit = ureg.Unit(unit)
         self.copy = CopyManager(self)
+
+        # displayoptions
+        self.display_unit = False;
+        self.additional_digits = 0;
 
     @property
     def value(self):
@@ -52,6 +58,13 @@ class Measurement:
         error = mymath.ceil(self.error, digits)
         self.ufloat = ufloat(value, error);
         return self;
+    
+    def to(self, new_unit):
+        converted_value = (self.value * self.unit).to(new_unit)
+        converted_error = (self.error * self.unit).to(new_unit)
+        self.value = converted_value
+        self.error = converted_error
+        self.unit = new_unit
 
     # ==================================================
     #    math operations
@@ -59,12 +72,15 @@ class Measurement:
 
     def __add__(self, other):
         if isinstance(other, Measurement):        
-            unit = self.unit if self.unit == other.unit else Unit()
-            if not unit: 
-                print(f"Warning! Addition of different units: {self.unit} and {other.unit}")
+            unit = self.unit
+            if self.unit != other.unit:
+                unit = ureg.Unit("");
+                print(f"Warning! Addition of different units: [{self.unit}] and [{other.unit}]")
             res = self.ufloat + other.ufloat;
-            return Measurement(res.nominal_value, res.std_dev);
+            return Measurement(res.nominal_value, res.std_dev, unit);
         elif isinstance(other, (int, float)):
+            if self.unit != ureg.Unit(""):
+                print(f"Addition Warning! Measurement has unit: {self.unit} other is {type(other)}")
             result = self.ufloat + other
             return Measurement(result.nominal_value, result.std_dev, self.unit)
         raise NotImplementedError(f"Unsupported type for operator +: {type(other)}")
@@ -81,7 +97,7 @@ class Measurement:
     def __mul__(self, other):
         if isinstance(other, Measurement):
             result = self.ufloat * other.ufloat
-            return Measurement(result.nominal_value, result.std_dev, self.unit)
+            return Measurement(result.nominal_value, result.std_dev, self.unit * other.unit)
         elif isinstance(other, (float, int)):
             result = self.ufloat * other
             return Measurement(result.nominal_value, result.std_dev, self.unit)
@@ -96,7 +112,7 @@ class Measurement:
     def __truediv__(self, other):
         if isinstance(other, Measurement):
             result = self.ufloat / other.ufloat
-            return Measurement(result.nominal_value, result.std_dev, self.unit)
+            return Measurement(result.nominal_value, result.std_dev, self.unit / other.unit)
         elif isinstance(other, (float, int)):
             result = self.ufloat / other
             return Measurement(result.nominal_value, result.std_dev, self.unit)
@@ -106,7 +122,7 @@ class Measurement:
     def __rtruediv__(self, other):
         if isinstance(other, Measurement):
             result = other.ufloat / self.ufloat
-            return Measurement(result.nominal_value, result.std_dev, self.unit)
+            return Measurement(result.nominal_value, result.std_dev, other.unit / self.unit)
         elif isinstance(other, (float, int)):
             result = other / self.ufloat
             return Measurement(result.nominal_value, result.std_dev, self.unit)
@@ -116,7 +132,7 @@ class Measurement:
     def __pow__(self, other):
         if isinstance(other, (int, float)):
             result = self.ufloat ** other
-            return Measurement(result.nominal_value, result.std_dev, self.unit)
+            return Measurement(result.nominal_value, result.std_dev, self.unit**other)
         else:
             raise NotImplementedError(f"Unsupported type for operator **: {type(other)}")
     
@@ -235,7 +251,12 @@ class Measurement:
         adjusted_error = self.error / (10 ** exponent_error)
         error_text = f"{int(mymath.ceil(adjusted_error))}"
         exponent_text = f"e{exponent_value:+d}" if exponent_value != 0 else ""
-        return f"{value_text}({error_text}){exponent_text}"
+
+        unit_text = "";
+        if(self.display_unit):
+            unit_text = " " + str(self.unit);
+
+        return f"{value_text}({error_text}){exponent_text}{unit_text}"
 
         # exponent = mymath.get_exponent_closest_3n(self.error);
         # symbol = "+" if exponent > 0 else "-"; # just to get the "+" explicitly
