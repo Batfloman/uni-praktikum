@@ -1,22 +1,8 @@
 \documentclass[a4paper,12pt]{article}
 
-% Pakete
-\usepackage[ngerman]{babel} % Deutsche Spracheinstellungen
-\usepackage[utf8]{inputenc} % UTF-8 Zeichenkodierung
-\usepackage{amsmath, amssymb} % Mathematik-Pakete
-\usepackage{graphicx} % Bilder einfügen
-\usepackage{hyperref} % Hyperlinks
-\usepackage{geometry} % Seitenränder
-\usepackage{siunitx} % SI-Einheiten
-\geometry{a4paper, margin=2.5cm}
-
-\newcounter{module}
+\usepackage{import}
+\subimport{../../template/}{preamble.tex}
 \setcounter{module}{100}
-
-% Titelinformationen
-\title{Versuchsprotokoll \themodule}
-\author{Florian Hirche}
-\date{\today}
 
 \begin{document}
 
