@@ -1,0 +1,24 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{import}
+\subimport{../../template/}{preamble.tex}
+\setcounter{module}{102}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% Einbinden der Segmente
+\input{latex/einleitung.tex}
+\input{latex/theorie.tex}
+\renewcommand{\thesubsection}{Aufgabe \themodule.\Alph{subsection}}
+\input{latex/voraufgaben.tex}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\input{latex/durchfuehrung.tex}
+\input{latex/messungen.tex}
+\input{latex/auswertung.tex}
+\input{latex/fazit.tex}
+
+\end{document}
