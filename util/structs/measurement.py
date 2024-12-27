@@ -1,5 +1,4 @@
 import numpy as np;
-from uncertainties import ufloat
 import pint
 import math
 
@@ -7,12 +6,13 @@ from util.structs import CopyManager
 from util import mymath;
 
 ureg = pint.UnitRegistry();
+ureg.formatter.default_format = "~P"
 
-# I would have *loved* to just go Measurement(ufloat) to extend the ufloat from the uncertainties package
+# I would have *loved* to just extend "Measurement(ufloat)" the ufloat from the uncertainties package
 # however the ufloat seems to return a function instead of a py-class, which means extending is not possible
 # this is why to add just a bit of custom functions we need to define all operations (__add__, ...) again :(
 class Measurement:
-    def __init__(self, value, uncertainty, unit=ureg.Unit(""), min_error=None):
+    def __init__(self, value, uncertainty, unit=ureg.Unit(""), min_error=0):
          # Überprüfung der Eingaben
         if not isinstance(value, (float, int)):
             value = np.nan
@@ -24,39 +24,30 @@ class Measurement:
             except ValueError:
                 uncertainty = np.nan  # Fallback, falls der Input nicht korrekt ist
         elif not isinstance(uncertainty, (float, int)):
-            uncertainty = np.nan
+            uncertainty = np.nan;
 
         # %-Errors could result in 0 values for uncertainties, we can bypass this with a min_error
-        if uncertainty is not np.nan and min_error is not None and uncertainty < min_error:
-            uncertainty = min_error
+        uncertainty = np.max([uncertainty, min_error]);
 
-        self.ufloat = ufloat(value, uncertainty);
+        self.value = value
+        self.error = uncertainty
+
         self.unit = ureg.Unit(unit)
         self.copy = CopyManager(self)
 
         # displayoptions
-        self.display_unit = False;
+        self.display_unit = True;
         self.additional_digits = 0;
 
-    @property
-    def value(self):
-        return self.ufloat.nominal_value;
-
-    @property
-    def error(self):
-        return self.ufloat.std_dev;
-    
     def round(self, additional_digits = 0):
         exponent = mymath.get_exponent_significant(self.error);
-        value = mymath.round(self.value, -exponent + additional_digits)
-        error = mymath.ceil(self.error, -exponent + additional_digits)
-        self.ufloat = ufloat(value, error);
+        self.value = mymath.round(self.value, -exponent + additional_digits)
+        self.error = mymath.ceil(self.error, -exponent + additional_digits)
         return self;
 
     def round_digit(self, digits = 0):
-        value = mymath.round(self.value, digits)
-        error = mymath.ceil(self.error, digits)
-        self.ufloat = ufloat(value, error);
+        self.value = mymath.round(self.value, digits)
+        self.error = mymath.ceil(self.error, digits)
         return self;
     
     def to(self, new_unit):
@@ -71,18 +62,22 @@ class Measurement:
     # ==================================================
 
     def __add__(self, other):
+        if isinstance(other, np.ndarray):
+            return np.array([self + x for x in other]);
+
+        if isinstance(other, (int, float)):
+            return self + Measurement(other, 0, ureg.Unit(""))
+        
         if isinstance(other, Measurement):        
-            unit = self.unit
+            value = self.value + other.value;
+            error = (self.error**2 + other.error**2)**.5
             if self.unit != other.unit:
                 unit = ureg.Unit("");
                 print(f"Warning! Addition of different units: [{self.unit}] and [{other.unit}]")
-            res = self.ufloat + other.ufloat;
-            return Measurement(res.nominal_value, res.std_dev, unit);
-        elif isinstance(other, (int, float)):
-            if self.unit != ureg.Unit(""):
-                print(f"Addition Warning! Measurement has unit: {self.unit} other is {type(other)}")
-            result = self.ufloat + other
-            return Measurement(result.nominal_value, result.std_dev, self.unit)
+            else:
+                unit = self.unit
+            return Measurement(value, error, unit);
+
         raise NotImplementedError(f"Unsupported type for operator +: {type(other)}")
         
     def __radd__(self, other):
@@ -94,58 +89,87 @@ class Measurement:
     def __rsub__(self, other):
         return (-self).__add__(other);
 
+    # ==================================================
+
     def __mul__(self, other):
-        if isinstance(other, Measurement):
-            result = self.ufloat * other.ufloat
-            return Measurement(result.nominal_value, result.std_dev, self.unit * other.unit)
-        elif isinstance(other, (float, int)):
-            result = self.ufloat * other
-            return Measurement(result.nominal_value, result.std_dev, self.unit)
-        elif isinstance(other, np.ndarray):
+        if isinstance(other, np.ndarray):
             return np.array([self * element for element in other]);
-        else:
-            raise NotImplementedError(f"Unsupported type for operator *: {type(other)}")
+
+        if isinstance(other, (float, int)):
+            return self * Measurement(other, 0, ureg.Unit(""))
+
+        if isinstance(other, Measurement):
+            value = self.value * other.value;
+            error = ((self.error*other.value)**2 + (self.value*other.error)**2)**.5
+            unit = self.unit * other.unit
+            return Measurement(value, error, unit)
+
+        raise NotImplementedError(f"Unsupported type for operator *: {type(other)}")
         
     def __rmul__(self, other):
         return self.__mul__(other)
 
+    # ==================================================
+
     def __truediv__(self, other):
+        if isinstance(other, np.ndarray):
+            return np.array([self / x for x in other]);
+
+        if isinstance(other, (float, int)):
+            return self / Measurement(other, 0, ureg.Unit(""))
+
         if isinstance(other, Measurement):
-            result = self.ufloat / other.ufloat
-            return Measurement(result.nominal_value, result.std_dev, self.unit / other.unit)
-        elif isinstance(other, (float, int)):
-            result = self.ufloat / other
-            return Measurement(result.nominal_value, result.std_dev, self.unit)
-        else:
-            raise NotImplementedError(f"Unsupported type for operator /: {type(other)}")
+            value = self.value / other.value;
+            error = ((self.error / other.value)**2 + (self.value * other.error / other.value**2)**2)**.5
+            unit = self.unit / other.unit;
+            return Measurement(value, error, unit)
+
+        raise NotImplementedError(f"Unsupported type for operator /: {type(other)}")
         
     def __rtruediv__(self, other):
+        if isinstance(other, np.ndarray):
+            return np.array([x / self for x in other]);
+
+        if isinstance(other, (float, int)):
+            return Measurement(other, 0, ureg.Unit("")) / self;
+
         if isinstance(other, Measurement):
-            result = other.ufloat / self.ufloat
-            return Measurement(result.nominal_value, result.std_dev, other.unit / self.unit)
-        elif isinstance(other, (float, int)):
-            result = other / self.ufloat
-            return Measurement(result.nominal_value, result.std_dev, self.unit)
-        else:
-            raise NotImplementedError(f"Unsupported type for reversed-operator /: {type(other)}")
+            value = other.value / self.value;
+            error = ((other.error / self.value)**2 + (other.value * self.error / self.value**2)**2)**.5
+            unit = other.unit / self.unit;
+            return Measurement(value, error, unit)
+
+        raise NotImplementedError(f"Unsupported type for reversed-operator /: {type(other)}")
+
+    # ==================================================
 
     def __pow__(self, other):
+        if isinstance(other, np.ndarray):
+            return np.array([self**x for x in other]);
+
         if isinstance(other, (int, float)):
-            result = self.ufloat ** other
-            return Measurement(result.nominal_value, result.std_dev, self.unit**other)
-        else:
-            raise NotImplementedError(f"Unsupported type for operator **: {type(other)}")
+            return self ** Measurement(other, 0, ureg.Unit(""))
+
+        if isinstance(other, Measurement):
+            value = self.value**other.value;
+            error = ((other.value * self.value**(other.value - 1) * self.error)**2 + (self.value**other.value * np.log(self.value) * other.error)**2)**.5
+            if other.unit != ureg.Unit(""):
+                print("** Exponent should not have a unit!") 
+            unit = self.unit ** other.value;
+            return Measurement(value, error, unit);
+
+        raise NotImplementedError(f"Unsupported type for operator **: {type(other)}")
     
     def __rpow__(self, other):
-        if not isinstance(other, (int, float)):
-            raise ValueError("Base must be a number")
-        if other <= 0:
-            raise ValueError("Base must be positive for exponentiation")
-        
-        value = other ** self.value
-        error = abs(value * math.log(other) * self.error)
-        
-        return Measurement(value, error)
+        if isinstance(other, np.ndarray):
+            return np.array([x**self for x in other]);
+
+        if isinstance(other, (int, float)):
+            return Measurement(other, 0, ureg.Unit("")) ** self
+
+        raise NotImplementedError(f"Unsupported type for operator **: {type(other)}")
+
+    # ==================================================
 
     def __neg__(self):
         return Measurement(-self.value, self.error, self.unit)
