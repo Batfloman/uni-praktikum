@@ -214,26 +214,29 @@ class DataCluster:
                 surviving.append(dataset)
         
         return DataCluster(np.array(surviving))
-
-    def filter(self, index: str, value: float) -> 'DataCluster':
+    
+    def filter(self, condition: callable) -> None:
         """
-        Filter datasets based on a specific value for a given index.
+        Filters datasets in place based on a custom condition function.
 
         Parameters:
-        index (str): The index to filter by.
-        value (float): The value to filter by.
+        condition (callable): A function that takes a dataset as input and returns True if it should be retained.
 
-        Returns:
-        Data: A new Data object containing datasets with the specified value for the index.
+        Raises:
+        TypeError: If the condition parameter is not callable.
         """
-        surviving = [];
-        for d in self.data:
-            if isinstance(d, Measurement) and d[index].value == value:
-                surviving.append(d);
-            elif d[index] == value:
-                surviving.append(d)
-        return DataCluster(np.array(surviving))
-    
+        if not callable(condition):
+            raise TypeError("The filter condition must be callable!")
+
+        for d in list(self.data):  # Iterate over a copy to safely modify the list
+            # try:
+                if not condition(d):
+                    self.remove(d)  # Remove datasets that don't satisfy the condition
+            # except Exception as e:
+            #     raise ValueError(f"An error occurred while evaluating the condition for dataset {d}: {e}") from e
+                # catch -> throw ?
+                # just adding some info to the error while its passing along :]
+
     def round_index(self, index: str, additional_digits: int = 0):
         for dataset in self.data:
             if index in dataset:
