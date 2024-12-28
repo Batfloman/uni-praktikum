@@ -1,3 +1,31 @@
 \subsection{}
 
-Welches Flächenträgheitsmoment hat ein rechteckiger Balken der Breite $b$ und Höhe $h$?
+\begin{tcolorbox}[task]
+    Welches Flächenträgheitsmoment $I$ hat ein rechteckiger Balken der Breite $b$ und Höhe $h$?
+\end{tcolorbox}
+
+Das Flächenträgheitsmoment $I$ ist allgemein definiert durch
+\begin{align}
+I = \int_{A} y^{2} dA 
+\label{eq:def-flaechentraegheitsmoment}
+\end{align}
+
+Setzen wir die Dimensionen des Rechtecks ein, so folgt
+\begin{align*}
+    I &= \int_{-b/2}^{b/2} dx \int_{-h/2}^{h/2} dy ~ y^{2} \\
+      &= \int_{-b/2}^{b/2} dx \left[\frac{1}{3} y^3 \right]_{-h/2}^{h/2} \\
+      &= \left[\frac{1}{3} y^3 \right]_{-h/2}^{h/2} \int_{-b/2}^{b/2} dx \\
+      &= \left[\frac{1}{3} \left(\frac{h}{2} \right)^{3} - \frac{1}{3} \left(-\frac{h}{2} \right)^{3} \right] \int_{-b/2}^{b/2} dx \\
+      &= \frac{1}{3} \cdot \frac{h^{3}}{8} + \frac{1}{3} \cdot \frac{h^{3}}{8} \int_{-b/2}^{b/2} dx \\
+      &= \frac{1}{12} h^{3} \int_{-b/2}^{b/2} dx \\
+      &= \frac{1}{12} h^{3} \left[x \right]_{-b/2}^{b/2}\\ 
+      &= \frac{1}{12} h^{3} b
+\end{align*}
+
+\begin{tcolorbox}[result]
+    Somit lautet das Flächenträgheitsmoment eines Rechtecks:
+    \begin{align}
+        I_{\text{rect}} = \frac{1}{12} \cdot h^{3} \cdot b
+        \label{eq:flaechentraegheitsmoment-rechteck}
+    \end{align}
+\end{tcolorbox}

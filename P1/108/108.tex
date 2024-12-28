@@ -15,10 +15,13 @@
 \input{latex/theorie.tex}
 \renewcommand{\thesubsection}{Aufgabe \themodule.\Alph{subsection}}
 \input{latex/voraufgaben.tex}
-\renewcommand{\thesubsection}{Aufgabe \themodule.\alph{subsection}}
+\renewcommand{\thesubsection}{\themodule.\alph{subsection}}
 \input{latex/durchfuehrung.tex}
+\renewcommand{\thesubsection}{Messung \themodule.\alph{subsection}}
 \input{latex/messungen.tex}
+\renewcommand{\thesubsection}{Auswertung \themodule.\alph{subsection}}
 \input{latex/auswertung.tex}
+\renewcommand{\thesubsection}{\thesection.\arabic{counter}}
 \input{latex/fazit.tex}
 
 \end{document}

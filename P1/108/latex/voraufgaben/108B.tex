@@ -1,3 +1,26 @@
 \subsection{}
 
-Welches Flächenträgheitsmoment hat ein runder Stab mit Radius $r$?
+\begin{tcolorbox}
+    Welches Flächenträgheitsmoment hat ein runder Stab mit Radius $r$?
+\end{tcolorbox}
+
+\noindent Auch hier nutzen wir wieder die Definition aus \autoref{eq:def-flaechentraegheitsmoment}.
+
+\noindent Hier nehmen wir für den Kreis aber Zylinderkoordinaten.
+
+Durch die Transformation ($y^{2} \cdot dxdy \to r^{3} \cdot d\varphi dr$) lautet das Integral dann:
+
+\begin{align*}
+    I &= \int_{0}^{2 \pi} d\varphi \int_{0}^{r} dr' ~ r'^{3} \\
+    &= \varphi \int_{0}^{r} dr' ~ r'^{3} \bigg|_{\varphi = 0}^{\varphi = 2\pi} \\
+    &= 2\pi \frac{1}{4} r'^{4} \bigg|_{r' = 0}^{r'=r} \\
+    &= \frac{1}{2}\pi r^{4} \\
+\end{align*}
+
+\begin{tcolorbox}[result]
+    Somit lautet das Flächenträgheitsmoment eines Kreisstabes:
+    \begin{align*}
+    I = \frac{1}{4} r^{4} \pi
+    \end{align*}
+\end{tcolorbox}
+
