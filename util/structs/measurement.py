@@ -39,6 +39,8 @@ class Measurement:
         self.display_unit = True;
         self.additional_digits = 0;
 
+    # ==================================================
+
     def round(self, additional_digits = 0):
         exponent = mymath.get_exponent_significant(self.error);
         self.value = mymath.round(self.value, -exponent + additional_digits)
