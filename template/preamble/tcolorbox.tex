@@ -1,14 +1,27 @@
 \usepackage{tcolorbox} % Colorbox
 
+\tcbuselibrary{skins} % Optional, for advanced styling
 \tcbset{
-  voraufgabe/.style={
-    colback=blue!5!white,
-    colframe=blue!75!black,
-    fonttitle=\bfseries,
-    coltitle=black,
-    colbacktitle=blue!30!white,
-    title={Voraufgabe},
-    boxrule=0.75mm,
-    rounded corners
-  }
+    task/.style={
+        colframe=purple!80!blue,      % Border color (purple/blueish)
+        colback=purple!10!blue!5,     % Background color (lighter purple/blueish)
+        coltitle=purple!80!blue,      % Title color
+        fonttitle=\bfseries,          % Title font
+        title={\textbf{Result}},      % Default title
+        boxrule=1pt,                  % Border thickness
+        attach boxed title to top left={xshift=2mm, yshift=-2mm},
+        boxed title style={colframe=purple!80!blue, colback=purple!30!blue!10},
+        drop shadow={purple!50!blue}, % Optional shadow
+    },
+    result/.style={
+        colframe=blue!70!black,       % Border color
+        colback=blue!10!white,        % Background color
+        coltitle=blue!70!black,       % Title color
+        fonttitle=\bfseries,          % Title font
+        title={\textbf{Result}},      % Default title
+        boxrule=1pt,                  % Border thickness
+        attach boxed title to top left={xshift=2mm, yshift=-2mm},
+        boxed title style={colframe=blue!70!black, colback=blue!30!white},
+        drop shadow={blue!50!black},  % Optional shadow
+    },
 }
