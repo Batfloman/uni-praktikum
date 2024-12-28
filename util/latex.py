@@ -23,7 +23,7 @@ def replace_latex_patterns(input_string, replacements = latex_patterns):
         input_string = re.sub(pattern, replacement, input_string)
     return input_string
 
-def save_table(arr, filename: str):
+def save_table(arr, filename: str, has_header=True):
     """
     Save a 2D NumPy array as a LaTeX table into a .tex file.
     Overwrites the file if it exists.
@@ -40,15 +40,19 @@ def save_table(arr, filename: str):
 
     with open(filename, 'w') as f:
         f.write("\\begin{tabular}{" + "c" * cols + "}\n")
-        f.write("\\hline\n")
+        f.write("\t\\toprule\n")
         
+        is_header = has_header;
         for row in arr:
             processed_row = [
                 replace_latex_patterns(str(value)) for value in row
             ]
-            f.write(" & ".join(processed_row) + " \\\\\n")
+            f.write("\t" + " & ".join(processed_row) + " \\\\\n")
+            if is_header:
+                f.write("\t\\midrule\n");
+                is_header = False;
         
-        f.write("\\hline\n")
+        f.write("\t\\bottomrule\n")
         f.write("\\end{tabular}\n")
     
     print(f"Successfully exported table {os.path.basename(filename)} to {os.path.abspath(filename)}")

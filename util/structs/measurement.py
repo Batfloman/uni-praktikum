@@ -36,7 +36,7 @@ class Measurement:
         self.copy = CopyManager(self)
 
         # displayoptions
-        self.display_unit = True;
+        self.display_unit = False;
         self.additional_digits = 0;
 
     # ==================================================

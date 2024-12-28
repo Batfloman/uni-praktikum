@@ -215,7 +215,7 @@ class DataCluster:
         
         return DataCluster(np.array(surviving))
     
-    def filter(self, condition: callable) -> None:
+    def filter(self, condition: callable) -> 'DataCluster':
         """
         Filters datasets in place based on a custom condition function.
 
@@ -229,13 +229,16 @@ class DataCluster:
             raise TypeError("The filter condition must be callable!")
 
         for d in list(self.data):  # Iterate over a copy to safely modify the list
-            # try:
+            try:
                 if not condition(d):
                     self.remove(d)  # Remove datasets that don't satisfy the condition
-            # except Exception as e:
-            #     raise ValueError(f"An error occurred while evaluating the condition for dataset {d}: {e}") from e
+            except Exception as e:
+                raise ValueError(f"An error occurred while evaluating the condition for dataset {d}: {e}") from e
                 # catch -> throw ?
                 # just adding some info to the error while its passing along :]
+
+        return self; 
+
 
     def round_index(self, index: str, additional_digits: int = 0):
         for dataset in self.data:
@@ -353,7 +356,8 @@ class _Save_Manager:
     
     def as_latex(self, filename):
         data = self._super.to_np_array_measurements();
-        latex.save_table(data, filename)
+        latex.save_table(data, filename, has_header=True)
+        
 
 def create_table(columns, data):
     """
